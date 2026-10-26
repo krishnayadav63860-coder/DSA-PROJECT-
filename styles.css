@@ -1,0 +1,1264 @@
+/* ==========================================================================
+   LinkedIn Clone + Graph BFS Friend Recommendation System
+   Pixel-Perfect LinkedIn Aesthetic Design System
+   ========================================================================== */
+
+:root {
+  --linkedin-blue: #0a66c2;
+  --linkedin-blue-hover: #004182;
+  --linkedin-blue-active: #002d59;
+  --linkedin-blue-light: #ebf4fd;
+  --bg-page: #f3f2ef;
+  --bg-card: #ffffff;
+  --border-color: #e0dfdc;
+  --border-light: #ebebeb;
+  --text-main: #191919;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --green-badge: #057642;
+  --green-badge-bg: #e6f4ea;
+  --amber-badge: #e07800;
+  --amber-badge-bg: #fff8e1;
+  --shadow-card: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-hover: 0 0 0 1px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+  --radius-card: 8px;
+  --radius-pill: 100px;
+  --font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Fira Sans", Ubuntu, Oxygen, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  line-height: 1.45;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  padding-top: 53px; /* Header offset */
+  min-height: 100vh;
+}
+
+/* --------------------------------------------------------------------------
+   1. GLOBAL LINKEDIN HEADER & NAVIGATION
+   -------------------------------------------------------------------------- */
+.global-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 53px;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.header-container {
+  width: 100%;
+  max-width: 1128px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 420px;
+}
+
+.linkedin-logo svg {
+  width: 34px;
+  height: 34px;
+  fill: var(--linkedin-blue);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.linkedin-logo:hover svg {
+  transform: scale(1.05);
+}
+
+.header-search {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.header-search input {
+  width: 100%;
+  height: 34px;
+  background-color: #edf3f8;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0 12px 0 36px;
+  font-size: 13px;
+  color: var(--text-main);
+  outline: none;
+  transition: background-color 0.15s, border-color 0.15s, width 0.2s ease;
+}
+
+.header-search input:focus {
+  background-color: #ffffff;
+  border-color: var(--linkedin-blue);
+  box-shadow: 0 0 0 1px var(--linkedin-blue);
+  max-width: 360px;
+}
+
+/* Search Dropdown Results */
+.search-results-dropdown {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  display: none;
+  max-height: 340px;
+  overflow-y: auto;
+  z-index: 1050;
+}
+
+.search-results-dropdown.active {
+  display: block;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-light);
+  transition: background-color 0.12s;
+}
+
+.search-result-item:hover {
+  background-color: var(--bg-page);
+}
+
+.search-result-item img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Nav Menu Items */
+.header-nav {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  gap: 2px;
+}
+
+.nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 68px;
+  height: 100%;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 11px;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.15s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-link:hover {
+  color: var(--text-main);
+}
+
+.nav-link.active {
+  color: var(--text-main);
+  border-bottom-color: var(--text-main);
+}
+
+.nav-link svg {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 2px;
+}
+
+.nav-badge {
+  position: absolute;
+  top: 4px;
+  right: 14px;
+  background-color: #cc1016;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 10px;
+  line-height: 1.2;
+}
+
+.nav-dsa-mode {
+  background: linear-gradient(135deg, #0a66c2 0%, #004182 100%);
+  color: #ffffff !important;
+  border-radius: 20px;
+  padding: 4px 12px;
+  height: 32px;
+  font-weight: 600;
+  font-size: 12px;
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.nav-dsa-mode:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(10, 102, 194, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   2. MAIN 3-COLUMN LAYOUT
+   -------------------------------------------------------------------------- */
+.main-wrapper {
+  max-width: 1128px;
+  margin: 20px auto;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: 225px 1fr 300px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Generic Card Styles */
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   3. LEFT SIDEBAR: PROFILE & CONTROLS
+   -------------------------------------------------------------------------- */
+.profile-card {
+  text-align: center;
+}
+
+.profile-cover {
+  height: 56px;
+  background: linear-gradient(135deg, #0a66c2 0%, #004182 100%);
+  position: relative;
+}
+
+.profile-avatar-wrapper {
+  margin-top: -38px;
+  display: inline-block;
+  position: relative;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 3px solid #ffffff;
+  background-color: #ffffff;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  cursor: pointer;
+}
+
+.profile-info {
+  padding: 12px 16px;
+}
+
+.profile-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.profile-name:hover {
+  text-decoration: underline;
+  color: var(--linkedin-blue);
+}
+
+.profile-headline {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.35;
+}
+
+.profile-stats {
+  border-top: 1px solid var(--border-light);
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+}
+
+.stat-val {
+  color: var(--linkedin-blue);
+  font-weight: 600;
+}
+
+/* Switch Active User Selector */
+.user-switch-widget {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-light);
+  text-align: left;
+}
+
+.widget-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.custom-select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--text-main);
+  background-color: #ffffff;
+  outline: none;
+  cursor: pointer;
+}
+
+.custom-select:focus {
+  border-color: var(--linkedin-blue);
+}
+
+/* Community / Topics */
+.sidebar-links {
+  padding: 12px 16px;
+  font-size: 12px;
+}
+
+.sidebar-link-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  color: var(--linkedin-blue);
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sidebar-link-item:hover {
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   4. CENTER COLUMN: FEED & GRAPH VISUALIZER
+   -------------------------------------------------------------------------- */
+.center-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Post Creator Box */
+.create-post-card {
+  padding: 12px 16px;
+}
+
+.create-post-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.create-post-top img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.post-trigger-btn {
+  flex: 1;
+  height: 44px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  background-color: transparent;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 13px;
+  text-align: left;
+  padding: 0 16px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.post-trigger-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.create-post-actions {
+  display: flex;
+  justify-content: space-around;
+  padding-top: 6px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* GRAPH TOPOLOGY CANVAS CARD */
+.graph-canvas-card {
+  position: relative;
+  padding: 16px;
+}
+
+.card-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card-header-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.live-badge {
+  background-color: var(--green-badge-bg);
+  color: var(--green-badge);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.canvas-container {
+  width: 100%;
+  height: 440px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: #faf9f7;
+  overflow: hidden;
+  position: relative;
+}
+
+canvas#networkCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.canvas-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-target { background-color: var(--linkedin-blue); border: 2px solid #004182; }
+.legend-friend { background-color: var(--green-badge); }
+.legend-rec { background-color: var(--amber-badge); }
+.legend-isolated { background-color: #999999; }
+
+/* --------------------------------------------------------------------------
+   5. FRIEND RECOMMENDATION CARDS (PEOPLE YOU MAY KNOW)
+   -------------------------------------------------------------------------- */
+.recommendations-section {
+  padding: 16px;
+}
+
+.rec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.rec-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.rec-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.rec-banner {
+  height: 52px;
+  background: linear-gradient(135deg, #0a66c2 0%, #004182 100%);
+  cursor: pointer;
+}
+
+.rec-avatar-wrapper {
+  margin-top: -36px;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.rec-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  object-fit: cover;
+  background-color: #fff;
+  transition: transform 0.15s ease;
+}
+
+.rec-avatar:hover {
+  transform: scale(1.04);
+}
+
+.rec-details {
+  padding: 8px 10px;
+  flex: 1;
+}
+
+.rec-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 2px;
+  cursor: pointer;
+}
+
+.rec-name:hover {
+  text-decoration: underline;
+  color: var(--linkedin-blue);
+}
+
+.rec-headline {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.3;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Facepile overlapping avatars */
+.facepile-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.facepile-avatars {
+  display: flex;
+  align-items: center;
+}
+
+.facepile-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid #ffffff;
+  margin-left: -6px;
+  object-fit: cover;
+}
+
+.facepile-avatar:first-child {
+  margin-left: 0;
+}
+
+.rec-mutuals-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  background-color: var(--bg-page);
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.rec-mutuals-badge:hover {
+  background-color: #e2e1dc;
+}
+
+.rec-mutuals-badge strong {
+  color: var(--linkedin-blue);
+}
+
+.btn-connect {
+  width: calc(100% - 20px);
+  margin: 0 auto 12px auto;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--linkedin-blue);
+  background-color: transparent;
+  color: var(--linkedin-blue);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 0.15s, color 0.15s, transform 0.1s;
+}
+
+.btn-connect:hover {
+  background-color: var(--linkedin-blue-light);
+}
+
+.btn-connect:active {
+  transform: scale(0.98);
+}
+
+.btn-connected {
+  background-color: var(--green-badge) !important;
+  border-color: var(--green-badge) !important;
+  color: #ffffff !important;
+}
+
+/* --------------------------------------------------------------------------
+   6. FULL LINKEDIN PROFILE VIEW (PAGE / MODAL VIEW)
+   -------------------------------------------------------------------------- */
+.profile-full-card {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.profile-full-cover {
+  height: 160px;
+  background: linear-gradient(135deg, #0a66c2 0%, #004182 100%);
+  position: relative;
+}
+
+.profile-full-avatar-box {
+  position: absolute;
+  top: 90px;
+  left: 24px;
+}
+
+.profile-full-avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 4px solid #ffffff;
+  background-color: #ffffff;
+  object-fit: cover;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+}
+
+.profile-full-body {
+  padding: 85px 24px 20px 24px;
+}
+
+.profile-name-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.profile-name-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.degree-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-page);
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.degree-badge.d1 {
+  background-color: var(--green-badge-bg);
+  color: var(--green-badge);
+  border-color: #b7eb8f;
+}
+
+.degree-badge.d2 {
+  background-color: var(--amber-badge-bg);
+  color: var(--amber-badge);
+  border-color: #ffe58f;
+}
+
+.profile-full-headline {
+  font-size: 15px;
+  color: var(--text-main);
+  margin-top: 4px;
+  line-height: 1.4;
+  max-width: 650px;
+}
+
+.profile-location-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+
+.profile-connections-link {
+  color: var(--linkedin-blue);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.profile-connections-link:hover {
+  text-decoration: underline;
+}
+
+/* Mutual connections bar on profile */
+.profile-mutual-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg-page);
+  border-radius: 6px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.profile-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.btn-profile-connect {
+  height: 36px;
+  padding: 0 18px;
+  border-radius: var(--radius-pill);
+  background-color: var(--linkedin-blue);
+  color: #ffffff;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.btn-profile-connect:hover {
+  background-color: var(--linkedin-blue-hover);
+}
+
+.btn-profile-connected {
+  background-color: var(--green-badge) !important;
+  color: #ffffff !important;
+}
+
+.btn-profile-secondary {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  background-color: #ffffff;
+  border: 1.5px solid var(--linkedin-blue);
+  color: var(--linkedin-blue);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-profile-secondary:hover {
+  background-color: var(--linkedin-blue-light);
+}
+
+.btn-profile-outline {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  background-color: #ffffff;
+  border: 1px solid var(--text-secondary);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-profile-outline:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  color: var(--text-main);
+  border-color: var(--text-main);
+}
+
+/* Profile Content Sections (About, Experience, Education, Skills) */
+.profile-section-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+
+.profile-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 14px;
+}
+
+.profile-about-text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-main);
+  white-space: pre-line;
+}
+
+/* Experience timeline */
+.timeline-item {
+  display: flex;
+  gap: 16px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.timeline-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.timeline-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  background: #f3f2ef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.timeline-details h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.timeline-details .company {
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.timeline-details .duration {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 2px 0;
+}
+
+.timeline-details .location {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+}
+
+.timeline-details .desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* Skills pill tags */
+.skills-tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skill-pill {
+  background: var(--bg-page);
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.profile-back-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  color: var(--linkedin-blue);
+  font-weight: 600;
+  font-size: 13px;
+  width: fit-content;
+}
+
+.profile-back-bar:hover {
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   7. RIGHT RAIL: ALGORITHM TELEMETRY & VIVA GUIDE
+   -------------------------------------------------------------------------- */
+.telemetry-card {
+  padding: 16px;
+}
+
+.telemetry-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 12px;
+}
+
+.telemetry-label {
+  color: var(--text-secondary);
+}
+
+.telemetry-val {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.preset-btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.btn-preset {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.btn-preset:hover {
+  background-color: var(--bg-page);
+  border-color: #999;
+}
+
+.btn-preset.primary {
+  background-color: var(--linkedin-blue);
+  color: #ffffff;
+  border-color: var(--linkedin-blue);
+}
+
+.btn-preset.primary:hover {
+  background-color: var(--linkedin-blue-hover);
+}
+
+/* Viva Accordion */
+.viva-card {
+  padding: 16px;
+}
+
+.accordion-item {
+  border-bottom: 1px solid var(--border-light);
+}
+
+.accordion-header {
+  width: 100%;
+  padding: 8px 0;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.accordion-header:hover {
+  color: var(--linkedin-blue);
+}
+
+.accordion-content {
+  display: none;
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  padding-bottom: 8px;
+}
+
+.accordion-item.active .accordion-content {
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   8. MY NETWORK TAB & MODALS
+   -------------------------------------------------------------------------- */
+.view-container {
+  display: none;
+}
+
+.view-container.active {
+  display: block;
+}
+
+/* Modal dialogs */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 16px;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-box {
+  background: #ffffff;
+  border-radius: var(--radius-card);
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--linkedin-blue);
+}
+
+.modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  background-color: #191919;
+  color: #ffffff;
+  padding: 12px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  animation: slideIn 0.25s ease-out;
+}
+
+.toast.success { border-left: 4px solid var(--green-badge); }
+.toast.info { border-left: 4px solid var(--linkedin-blue); }
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .main-wrapper {
+    grid-template-columns: 200px 1fr;
+  }
+  .right-sidebar {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-wrapper {
+    grid-template-columns: 1fr;
+  }
+  .left-sidebar {
+    display: none;
+  }
+  .header-search input {
+    width: 140px;
+  }
+}

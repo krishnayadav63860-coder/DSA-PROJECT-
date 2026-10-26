@@ -1,0 +1,13 @@
+# Social Network Friend Recommendation System Database
+# Format: USERS_COUNT, followed by Name|City|Interests
+# Followed by FRIENDSHIPS_COUNT, followed by User1|User2
+USERS_COUNT: 5
+Rahul|Delhi|AI, Machine Learning
+Amit|Bangalore|DSA, Web Development
+Priya|Mumbai|Data Science, Cloud
+Neha|Delhi|UI/UX, Cybersecurity
+Karan|Pune|Gaming, IoT
+FRIENDSHIPS_COUNT: 3
+Rahul|Amit
+Rahul|Neha
+Amit|Priya

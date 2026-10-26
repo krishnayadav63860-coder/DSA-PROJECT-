@@ -1,0 +1,21 @@
+{
+  "name": "linkedin-friend-recommendation",
+  "version": "1.0.0",
+  "description": "LinkedIn Clone showcasing Graph BFS Friend Recommendation System and Hashing",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "echo 'No build step required for static web app'"
+  },
+  "keywords": [
+    "linkedin-clone",
+    "graph-algorithms",
+    "bfs",
+    "friend-recommendation",
+    "dsa",
+    "c-project"
+  ],
+  "author": "BTech AIML",
+  "license": "MIT"
+}
