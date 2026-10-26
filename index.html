@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkedIn - Social Network Friend Recommendation System (Graph & BFS)</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230a66c2'><path d='M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3m1.4 9.74v-8.37H5.06v8.37h2.8z'/></svg>" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ========================================================================
+       1. GLOBAL LINKEDIN HEADER
+       ======================================================================== -->
+  <header class="global-header">
+    <div class="header-container">
+      <div class="header-left">
+        <div class="linkedin-logo" id="logoBtn" title="LinkedIn Graph Recommendation System">
+          <svg viewBox="0 0 24 24">
+            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3m1.4 9.74v-8.37H5.06v8.37h2.8z"/>
+          </svg>
+        </div>
+        <div class="header-search">
+          <div class="search-input-wrapper">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="globalSearchInput" placeholder="Search 15 members (djb2 hash O(1))...">
+          </div>
+          <div class="search-results-dropdown" id="searchResultsDropdown"></div>
+        </div>
+      </div>
+
+      <nav class="header-nav">
+        <a class="nav-link active" data-tab="feed" id="navHome">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+          </svg>
+          <span>Home</span>
+        </a>
+
+        <a class="nav-link" data-tab="network" id="navNetwork">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+          </svg>
+          <span class="nav-badge" id="networkBadge">14</span>
+          <span>My Network</span>
+        </a>
+
+        <a class="nav-link" data-tab="dsa" id="navDSA">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 6h16V4H4c-1.1 0-2 .9-2 2v11H0v3h14v-3H4V6zm19 2h-6c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zm-1 10h-4v-7h4v7z"/>
+          </svg>
+          <span>DSA Inspector</span>
+        </a>
+
+        <button class="nav-dsa-mode" id="btnQuickDemo">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          <span>Reset 15 People</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ========================================================================
+       2. MAIN 3-COLUMN WRAPPER
+       ======================================================================== -->
+  <main class="main-wrapper">
+
+    <!-- LEFT SIDEBAR: PROFILE & SWITCHER -->
+    <aside class="left-sidebar">
+      <div class="card profile-card">
+        <div class="profile-cover" id="sidebarCover"></div>
+        <div class="profile-avatar-wrapper">
+          <img class="profile-avatar" id="sidebarAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80" alt="Active User Avatar" title="Click to view full profile">
+        </div>
+        <div class="profile-info">
+          <h2 class="profile-name" id="sidebarName">Rahul</h2>
+          <p class="profile-headline" id="sidebarHeadline">AI & Machine Learning Researcher | B.Tech AIML</p>
+        </div>
+        <div class="profile-stats">
+          <div class="stat-row">
+            <span class="stat-label">Connections</span>
+            <span class="stat-val" id="sidebarConnectionCount">7</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Mutual Reach (Depth 2)</span>
+            <span class="stat-val" id="sidebarDepth2Count">14</span>
+          </div>
+        </div>
+
+        <!-- Switch Current User (Demonstrate BFS from any user's perspective!) -->
+        <div class="user-switch-widget">
+          <div class="widget-title">View Network As:</div>
+          <select class="custom-select" id="activeUserSelect">
+            <!-- Dynamically populated with 15 people -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Quick Shortcuts -->
+      <div class="card sidebar-links">
+        <div class="widget-title">DSA Project Shortcuts</div>
+        <a class="sidebar-link-item" id="linkMutualExplorer">
+          <span>👥 Mutual Friends Explorer</span>
+        </a>
+        <a class="sidebar-link-item" id="linkHashDeepDive">
+          <span>⚡ djb2 Hash Table View</span>
+        </a>
+        <a class="sidebar-link-item" id="linkNewUser">
+          <span>➕ Register New User</span>
+        </a>
+        <a class="sidebar-link-item" id="linkExportTxt">
+          <span>💾 Download network.txt</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- CENTER COLUMN: VIEWS (FEED, MY NETWORK, DSA INSPECTOR, PROFILE VIEW) -->
+    <section class="center-content">
+
+      <!-- VIEW 1: HOME FEED VIEW -->
+      <div class="view-container active" id="viewFeed">
+        <!-- Start a Post Card -->
+        <div class="card create-post-card">
+          <div class="create-post-top">
+            <img id="postAvatarMini" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80" alt="User">
+            <button class="post-trigger-btn" id="btnOpenRegisterModal">Start a post about Graph BFS Recommendation...</button>
+          </div>
+          <div class="create-post-actions">
+            <button class="action-btn" id="btnViewNetworkTab">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#378fe9"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg>
+              <span>Network Graph</span>
+            </button>
+            <button class="action-btn" id="btnRegisterUserDirect">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#5f9b41"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              <span>Add User</span>
+            </button>
+            <button class="action-btn" id="btnTriggerFileModal">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#e06847"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+              <span>network.txt</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- LIVE GRAPH TOPOLOGY CANVAS CARD -->
+        <div class="card graph-canvas-card">
+          <div class="card-header-flex">
+            <h3 class="card-header-title">
+              <span>Interactive Social Network Topology</span>
+              <span class="live-badge">15 Members Live</span>
+            </h3>
+            <button class="btn-preset" id="btnResetPhysics" style="width: auto; padding: 4px 10px; font-size: 11px;">
+              🔄 Re-center Graph
+            </button>
+          </div>
+          <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+            Drag any node to test physics equilibrium. Click any member's node to open their full LinkedIn profile and explore mutuals!
+          </p>
+          <div class="canvas-container">
+            <canvas id="networkCanvas"></canvas>
+          </div>
+          <div class="canvas-legend">
+            <div class="legend-item"><span class="legend-dot legend-target"></span> Target (Depth 0)</div>
+            <div class="legend-item"><span class="legend-dot legend-friend"></span> 1st-Degree Friends (Depth 1)</div>
+            <div class="legend-item"><span class="legend-dot legend-rec"></span> Recommended (Depth 2 Mutuals)</div>
+            <div class="legend-item"><span class="legend-dot legend-isolated"></span> Isolated / Dist &gt; 2</div>
+          </div>
+        </div>
+
+        <!-- PEOPLE YOU MAY KNOW (RECOMMENDATION ENGINE CARDS) -->
+        <div class="card recommendations-section">
+          <div class="card-header-flex">
+            <div>
+              <h3 class="card-header-title">People you may know based on mutual connections</h3>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                Ranked by Breadth-First Search (BFS Depth 2) + Mutual Friendship Intersections
+              </p>
+            </div>
+          </div>
+
+          <div class="rec-grid" id="recommendationsGrid">
+            <!-- Dynamically populated with 15 people recommendations -->
+          </div>
+        </div>
+
+        <!-- Project Overview Post Card -->
+        <div class="card" style="padding: 16px;">
+          <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px;">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80" style="width: 48px; height: 48px; border-radius: 50%;" alt="Author">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 600;">Rahul Sharma</h4>
+              <p style="font-size: 11px; color: var(--text-secondary);">B.Tech AIML • Data Structures & Algorithms Project • 1d • 🌐</p>
+            </div>
+          </div>
+          <p style="font-size: 13px; line-height: 1.5; margin-bottom: 12px;">
+            🚀 Built a complete <strong>Social Network Friend Recommendation System</strong> with 15 curated industry members from Google, Microsoft, Meta, Swiggy, and Uber!
+            <br><br>
+            Using an <strong>Adjacency List Graph</strong>, <strong>djb2 Hash Table (O(1) lookups)</strong>, and a <strong>Bounded Depth-2 BFS traversal</strong>, our algorithm finds "friends-of-friends" who share mutual connections and ranks them in descending order.
+          </p>
+          <div style="background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 11px; line-height: 1.4; margin-bottom: 12px;">
+            <span style="color: #6a9955;">// Bounded BFS Depth-2 Recommendation Logic</span><br>
+            <span style="color: #569cd6;">while</span> (!queue_is_empty(q)) {<br>
+            &nbsp;&nbsp;<span style="color: #4ec9b0;">int</span> u = queue_dequeue(q);<br>
+            &nbsp;&nbsp;<span style="color: #569cd6;">if</span> (dist[u] &gt;= 2) <span style="color: #569cd6;">continue</span>;<br>
+            &nbsp;&nbsp;<span style="color: #569cd6;">for</span> (neighbor : adj[u]) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #569cd6;">if</span> (dist[neighbor] == -1) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dist[neighbor] = dist[u] + 1;<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;queue_enqueue(q, neighbor);<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+            &nbsp;&nbsp;}<br>
+            }
+          </div>
+          <div style="display: flex; gap: 8px; font-size: 11px; color: var(--linkedin-blue); font-weight: 600;">
+            <span>#GraphAlgorithms</span> <span>#BFS</span> <span>#DataStructures</span> <span>#BTechAIML</span> <span>#CProgramming</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: DEDICATED "MY NETWORK" VIEW -->
+      <div class="view-container" id="viewNetwork">
+        <div class="card" style="padding: 16px;">
+          <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Network Intelligence Dashboard</h2>
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+            Real-time graph metrics calculated across 15 network profiles:
+          </p>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px;">
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid var(--linkedin-blue);">
+              <div style="font-size: 11px; color: var(--text-secondary);">Active Users</div>
+              <div style="font-size: 20px; font-weight: 700;" id="metricUsers">15</div>
+            </div>
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid var(--green-badge);">
+              <div style="font-size: 11px; color: var(--text-secondary);">Total Friendships</div>
+              <div style="font-size: 20px; font-weight: 700;" id="metricFriendships">0</div>
+            </div>
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #f59e0b);">
+              <div style="font-size: 11px; color: var(--text-secondary);">Avg Connections</div>
+              <div style="font-size: 20px; font-weight: 700;" id="metricAvgFriends">0.00</div>
+            </div>
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #8b5cf6);">
+              <div style="font-size: 11px; color: var(--text-secondary);">Graph Density</div>
+              <div style="font-size: 20px; font-weight: 700;" id="metricDensity">0.0%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 16px;">
+          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">Manage 1st-Degree Connections</h3>
+          <div id="connectionsList">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 3: DSA ALGORITHM INSPECTOR VIEW -->
+      <div class="view-container" id="viewDSA">
+        <div class="card" style="padding: 16px;">
+          <h2 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Algorithm Deep Dive: BFS Level Traversal</h2>
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
+            Live step-by-step trace showing queue states, distance assignments, and mutual set intersections:
+          </p>
+
+          <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">1. Distance Array (<code style="background: #eee; padding: 2px 4px;">dist[]</code>) from Target User:</h4>
+          <div style="overflow-x: auto; margin-bottom: 16px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;" id="distanceTable">
+              <!-- Dynamically populated -->
+            </table>
+          </div>
+
+          <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">2. BFS Queue Execution Stepper:</h4>
+          <div id="bfsTraceList" style="max-height: 240px; overflow-y: auto; background: #fafafa; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; font-family: monospace; font-size: 11px;">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 4: FULL DEDICATED LINKEDIN PROFILE VIEW -->
+      <div class="view-container" id="viewProfile">
+        <div class="profile-back-bar" id="btnBackFromProfile">
+          <span>&larr; Back to Network Feed</span>
+        </div>
+
+        <!-- Main Profile Banner & Actions -->
+        <div class="profile-full-card">
+          <div class="profile-full-cover" id="viewProfileCover"></div>
+          <div class="profile-full-avatar-box">
+            <img class="profile-full-avatar" id="viewProfileAvatar" src="" alt="Avatar">
+          </div>
+          <div class="profile-full-body">
+            <div class="profile-name-header">
+              <h1 class="profile-name-text" id="viewProfileName">Name</h1>
+              <span class="degree-badge" id="viewProfileDegree">2nd</span>
+            </div>
+            <p class="profile-full-headline" id="viewProfileHeadline">Headline</p>
+            <div class="profile-location-row">
+              <span id="viewProfileLocation">City, Country</span>
+              <span>•</span>
+              <a class="profile-connections-link" id="viewProfileConnectionsCount">42 connections</a>
+            </div>
+
+            <!-- Mutual connections bar -->
+            <div class="profile-mutual-banner" id="viewProfileMutualBanner">
+              <div class="facepile-avatars" id="viewProfileFacepile"></div>
+              <span id="viewProfileMutualText">3 mutual connections: Amit, Neha and 1 other</span>
+            </div>
+
+            <!-- Profile Action Buttons -->
+            <div class="profile-actions-row">
+              <button class="btn-profile-connect" id="btnProfileConnect">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                <span>Connect</span>
+              </button>
+              <button class="btn-profile-secondary" id="btnProfileMessage">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+                </svg>
+                <span>Message</span>
+              </button>
+              <button class="btn-profile-outline">More</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- About Section -->
+        <div class="profile-section-card">
+          <h3 class="profile-section-title">About</h3>
+          <p class="profile-about-text" id="viewProfileAbout">Career summary...</p>
+        </div>
+
+        <!-- Experience Section -->
+        <div class="profile-section-card">
+          <h3 class="profile-section-title">Experience</h3>
+          <div id="viewProfileExperienceList"></div>
+        </div>
+
+        <!-- Education Section -->
+        <div class="profile-section-card">
+          <h3 class="profile-section-title">Education</h3>
+          <div id="viewProfileEducationList"></div>
+        </div>
+
+        <!-- Skills Section -->
+        <div class="profile-section-card">
+          <h3 class="profile-section-title">Skills &amp; Endorsements</h3>
+          <div class="skills-tags-wrap" id="viewProfileSkillsList"></div>
+        </div>
+
+        <!-- Mutual Connections Breakdown -->
+        <div class="profile-section-card" id="viewProfileMutualCard">
+          <h3 class="profile-section-title">Mutual Connections (BFS Depth 2 Intersection)</h3>
+          <div id="viewProfileMutualList"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT RAIL: TELEMETRY & CONTROLS -->
+    <aside class="right-sidebar">
+      <div class="card telemetry-card">
+        <div class="card-header-flex">
+          <h3 class="card-header-title">Algorithm Telemetry</h3>
+          <span class="live-badge">Active</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">Active Target User</span>
+          <span class="telemetry-val" id="telemetryTarget">Rahul (ID: 0)</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">BFS Depth Bound</span>
+          <span class="telemetry-val">Depth &le; 2</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">Candidates Evaluated</span>
+          <span class="telemetry-val" id="telemetryCandidates">14</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">Ranking Heuristic</span>
+          <span class="telemetry-val">Mutuals &darr;, Name &uarr;</span>
+        </div>
+        <div class="telemetry-item">
+          <span class="telemetry-label">Hash Table Buckets</span>
+          <span class="telemetry-val">53 (djb2)</span>
+        </div>
+
+        <div class="preset-btn-group">
+          <button class="btn-preset primary" id="btnLoadDemoPreset">
+            ⭐ Reset 15 People Network
+          </button>
+          <button class="btn-preset" id="btnAddNewUser">
+            ➕ Register New User
+          </button>
+          <button class="btn-preset" id="btnFindMutuals">
+            🔍 Check Mutual Friends
+          </button>
+          <button class="btn-preset" id="btnExportTxtRight">
+            📥 Export to network.txt
+          </button>
+        </div>
+      </div>
+
+      <!-- Viva Q&A Accordion -->
+      <div class="card viva-card">
+        <div class="card-header-flex" style="margin-bottom: 8px;">
+          <h3 class="card-header-title">DSA Viva Quick Reference</h3>
+        </div>
+        <div class="accordion-item active">
+          <button class="accordion-header">
+            <span>Why BFS instead of DFS?</span>
+            <span>▾</span>
+          </button>
+          <div class="accordion-content">
+            BFS explores vertices level-by-level (by shortest path distance). This guarantees discovering all friends-of-friends at distance 2 before deeper nodes.
+          </div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-header">
+            <span>Why Adjacency List?</span>
+            <span>▾</span>
+          </button>
+          <div class="accordion-content">
+            Social graphs are sparse (|E| &lt;&lt; |V|²). Adjacency list uses O(V + E) space vs O(V²) for matrices, and allows O(degree) neighbor traversal.
+          </div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-header">
+            <span>What does djb2 hashing do?</span>
+            <span>▾</span>
+          </button>
+          <div class="accordion-content">
+            djb2 uses hash * 33 + char with initial prime 5381. It provides uniform bit distribution and O(1) average lookup for usernames.
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- ========================================================================
+       3. MODALS
+       ======================================================================== -->
+  <!-- Register User Modal -->
+  <div class="modal-overlay" id="modalRegisterUser">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Register New Member</h3>
+        <button class="modal-close" data-close>&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" class="form-input" id="regName" placeholder="e.g. Vikramaditya Rao">
+        </div>
+        <div class="form-group">
+          <label>Professional Headline</label>
+          <input type="text" class="form-input" id="regHeadline" placeholder="e.g. AI Researcher @ Google DeepMind">
+        </div>
+        <div class="form-group">
+          <label>City / Location</label>
+          <input type="text" class="form-input" id="regCity" placeholder="e.g. Bangalore, India">
+        </div>
+        <div class="form-group">
+          <label>Interests / Technologies</label>
+          <input type="text" class="form-input" id="regInterests" placeholder="e.g. Machine Learning, Distributed Graphs">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-preset" data-close>Cancel</button>
+        <button class="btn-preset primary" id="btnSubmitRegister">Register Member</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mutual Friends Modal -->
+  <div class="modal-overlay" id="modalMutualFriends">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Mutual Friends Explorer</h3>
+        <button class="modal-close" data-close>&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Select First User</label>
+          <select class="custom-select" id="mutualSelectU"></select>
+        </div>
+        <div class="form-group">
+          <label>Select Second User</label>
+          <select class="custom-select" id="mutualSelectV"></select>
+        </div>
+        <div id="mutualResultsBox" style="margin-top: 14px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-preset primary" id="btnCalculateMutuals">Calculate Intersection</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hash Table Inspector Modal -->
+  <div class="modal-overlay" id="modalHashTable">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title">djb2 Hash Table Inspector (53 Buckets)</h3>
+        <button class="modal-close" data-close>&times;</button>
+      </div>
+      <div class="modal-body" id="hashTableContent">
+        <!-- Rendered via JS -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn-preset" data-close>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export/Import Text Modal -->
+  <div class="modal-overlay" id="modalFileText">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Network Database File (network.txt)</h3>
+        <button class="modal-close" data-close>&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+          This formatted file matches the exact storage format used by the C application:
+        </p>
+        <textarea id="fileTextContent" style="width: 100%; height: 200px; font-family: monospace; font-size: 12px; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px;"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-preset" id="btnCopyFileText">Copy to Clipboard</button>
+        <button class="btn-preset primary" data-close>Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="graph-dsa.js"></script>
+  <script src="network-canvas.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
